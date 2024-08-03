@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,35 +14,93 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Hotel',
+            name="Hotel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('location', models.CharField(max_length=100)),
-                ('description', models.TextField()),
-                ('admin', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("location", models.CharField(max_length=100)),
+                ("description", models.TextField()),
+                (
+                    "admin",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Room',
+            name="Room",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('room_type', models.CharField(choices=[('S', 'Single'), ('D', 'Double')], max_length=1)),
-                ('luxury', models.CharField(choices=[('D', 'Deluxe'), ('SD', 'Super Deluxe')], max_length=2)),
-                ('base_cost', models.DecimalField(decimal_places=2, max_digits=8)),
-                ('available_rooms', models.PositiveIntegerField()),
-                ('hotel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reservations.hotel')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "room_type",
+                    models.CharField(
+                        choices=[("S", "Single"), ("D", "Double")], max_length=1
+                    ),
+                ),
+                (
+                    "luxury",
+                    models.CharField(
+                        choices=[("D", "Deluxe"), ("SD", "Super Deluxe")], max_length=2
+                    ),
+                ),
+                ("base_cost", models.DecimalField(decimal_places=2, max_digits=8)),
+                ("available_rooms", models.PositiveIntegerField()),
+                (
+                    "hotel",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="reservations.hotel",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Reservation',
+            name="Reservation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('check_in_date', models.DateField()),
-                ('number_of_days', models.PositiveIntegerField()),
-                ('total_cost', models.DecimalField(decimal_places=2, max_digits=8)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('room', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reservations.room')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("check_in_date", models.DateField()),
+                ("number_of_days", models.PositiveIntegerField()),
+                ("total_cost", models.DecimalField(decimal_places=2, max_digits=8)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "room",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="reservations.room",
+                    ),
+                ),
             ],
         ),
     ]
