@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from reservations.models.base_models import UIDModel, TimestampedModel
 
-class Hotel(models.Model):
+
+class Hotel(UIDModel, TimestampedModel):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
     description = models.TextField()
@@ -12,7 +14,7 @@ class Hotel(models.Model):
         return self.name
 
 
-class Room(models.Model):
+class Room(UIDModel, TimestampedModel):
     SINGLE = "S"
     DOUBLE = "D"
     ROOM_TYPES = [
@@ -37,7 +39,7 @@ class Room(models.Model):
         return f"{self.hotel.name} - {self.room_type} - {self.luxury}"
 
 
-class Reservation(models.Model):
+class Reservation(UIDModel, TimestampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     check_in_date = models.DateField()
