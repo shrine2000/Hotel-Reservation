@@ -40,4 +40,4 @@ A Django app for managing hotel reservations. Allows users to search, book rooms
 
 ## License
 
-MIT
+Apache License

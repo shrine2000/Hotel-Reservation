@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from reservations.models.base_models import UIDModel, TimestampedModel
+from reservations.models.enums import RoomType, RoomLuxury
 
 
 class Hotel(UIDModel, TimestampedModel):
@@ -15,23 +16,9 @@ class Hotel(UIDModel, TimestampedModel):
 
 
 class Room(UIDModel, TimestampedModel):
-    SINGLE = "S"
-    DOUBLE = "D"
-    ROOM_TYPES = [
-        (SINGLE, "Single"),
-        (DOUBLE, "Double"),
-    ]
-
-    DELUXE = "D"
-    SUPER_DELUXE = "SD"
-    ROOM_LUXURY = [
-        (DELUXE, "Deluxe"),
-        (SUPER_DELUXE, "Super Deluxe"),
-    ]
-
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
-    room_type = models.CharField(max_length=1, choices=ROOM_TYPES)
-    luxury = models.CharField(max_length=2, choices=ROOM_LUXURY)
+    room_type = models.CharField(max_length=1, choices=RoomType.choices())
+    luxury = models.CharField(max_length=2, choices=RoomLuxury.choices())
     base_cost = models.DecimalField(max_digits=8, decimal_places=2)
     available_rooms = models.PositiveIntegerField()
 
