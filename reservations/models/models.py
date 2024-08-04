@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from reservations.models.base_models import UIDModel, TimestampedModel
-from reservations.models.enums import RoomType, RoomLuxury
+from reservations.enums import RoomType, RoomLuxury
 
 
 class Hotel(UIDModel, TimestampedModel):
@@ -10,6 +10,7 @@ class Hotel(UIDModel, TimestampedModel):
     location = models.CharField(max_length=100)
     description = models.TextField()
     admin = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -21,6 +22,7 @@ class Room(UIDModel, TimestampedModel):
     luxury = models.CharField(max_length=2, choices=RoomLuxury.choices())
     base_cost = models.DecimalField(max_digits=8, decimal_places=2)
     available_rooms = models.PositiveIntegerField()
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.hotel.name} - {self.room_type} - {self.luxury}"
@@ -32,6 +34,7 @@ class Reservation(UIDModel, TimestampedModel):
     check_in_date = models.DateField()
     number_of_days = models.PositiveIntegerField()
     total_cost = models.DecimalField(max_digits=8, decimal_places=2)
+    is_active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         self.total_cost = self.room.base_cost * self.number_of_days
