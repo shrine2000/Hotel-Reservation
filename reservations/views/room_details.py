@@ -1,13 +1,15 @@
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
-from .models import Reservation
-from .serializers import ReservationSerializer
+from reservations.models.models import Reservation
+from reservations.serializers import ReservationSerializer
 from rest_framework import serializers
 
 
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         room = serializer.validated_data["room"]

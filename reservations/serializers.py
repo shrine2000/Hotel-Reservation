@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import Hotel, Room, Reservation
 from django.contrib.auth.models import User
+
+from reservations.models.models import Hotel, Room, Reservation
 
 
 class HotelSerializer(serializers.ModelSerializer):
@@ -28,3 +29,14 @@ class ReservationSerializer(serializers.ModelSerializer):
         if room.available_rooms < 1:
             raise serializers.ValidationError("No rooms available")
         return data
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("username", "password", "email")
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
