@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from reservations.models.models import Reservation
+from reservations.models import Reservation
 from reservations.serializers import ReservationSerializer
 from rest_framework import serializers
 
