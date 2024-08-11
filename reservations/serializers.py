@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from reservations.models.models import Hotel, Room, Reservation
+
+from reservations.models import Room, Hotel, Reservation
 
 
 class HotelSerializer(serializers.ModelSerializer):

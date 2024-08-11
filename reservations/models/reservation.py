@@ -1,13 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from reservations.models import Room
 from reservations.models.base_models import UIDModel, TimestampedModel
 
 
 class Reservation(UIDModel, TimestampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    room = models.ForeignKey("Room", on_delete=models.CASCADE)
     check_in_date = models.DateField()
     number_of_days = models.PositiveIntegerField()
     total_cost = models.DecimalField(max_digits=8, decimal_places=2)
