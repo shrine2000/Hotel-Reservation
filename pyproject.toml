@@ -13,6 +13,7 @@ djangorestframework = "^3.15.2"
 celery = "^5.4.0"
 redis = "^5.0.8"
 djangorestframework-simplejwt = "^5.3.1"
+pytest-django = "^4.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -22,3 +23,9 @@ pytest-django = "^4.8.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+# https://pytest-django.readthedocs.io/en/latest/
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "hotel_reservation.settings"
+python_files = ["test_*.py"]
