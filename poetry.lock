@@ -256,6 +256,20 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "faker"
+version = "28.0.0"
+description = "Faker is a Python package that generates fake data for you."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "Faker-28.0.0-py3-none-any.whl", hash = "sha256:6a3a08be54c37e05f7943d7ba5211d252c1de737687a46ad6f29209d8d5db11f"},
+    {file = "faker-28.0.0.tar.gz", hash = "sha256:0d3c0399204aaf8205cc1750db443474ca0436f177126b2c27b798e8336cc74f"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.4"
+
+[[package]]
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
@@ -297,6 +311,24 @@ sqlalchemy = ["sqlalchemy (>=1.4.48,<2.1)"]
 sqs = ["boto3 (>=1.26.143)", "pycurl (>=7.43.0.5)", "urllib3 (>=1.26.16)"]
 yaml = ["PyYAML (>=3.10)"]
 zookeeper = ["kazoo (>=2.8.0)"]
+
+[[package]]
+name = "model-bakery"
+version = "1.19.4"
+description = "Smart object creation facility for Django."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "model_bakery-1.19.4-py3-none-any.whl", hash = "sha256:9134a24a2cecc861460993c652dc62ab0a0cd73dd8c3581cd273a3b793fad078"},
+    {file = "model_bakery-1.19.4.tar.gz", hash = "sha256:7c18882cbe29cff80c4dad238243f93174eaf02aef7f805f0d44606c57271d44"},
+]
+
+[package.dependencies]
+django = ">=4.2"
+
+[package.extras]
+docs = ["myst-parser", "sphinx", "sphinx-rtd-theme"]
+test = ["black", "coverage", "mypy", "pillow", "pytest", "pytest-django", "ruff"]
 
 [[package]]
 name = "packaging"
@@ -511,4 +543,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "3.10"
-content-hash = "56170d6860db8a7705a7f2975a671fdb7ef754c2ca69b2a6894694ca36452eb5"
+content-hash = "7dc130ae349cb8ca2590052f289905d6a8bd2ae2893b191c03a3db2f63352dce"
