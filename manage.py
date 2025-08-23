@@ -5,9 +5,34 @@ import os
 import sys
 
 
+def is_command_allowed(command):
+    allowed_commands = {
+        "runserver",
+        "migrate",
+        "makemigrations",
+        "collectstatic",
+        "shell",
+        "sqlmigrate",
+        "check",
+    }
+    if command in allowed_commands:
+        return True
+
+    for allowed_cmd in allowed_commands:
+        if command.startswith(allowed_cmd):
+            return True
+    return False
+
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hotel_reservation.settings")
+
+    if len(sys.argv) > 1:
+        command = sys.argv[1]
+        if not is_command_allowed(command=command):
+            print("Invalid Command")
+        sys.exit(1)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
