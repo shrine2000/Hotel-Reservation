@@ -35,6 +35,5 @@ class HotelDeactivateView(generics.UpdateAPIView):
 
     def patch(self, request, *args, **kwargs):
         hotel = self.get_object()
-        hotel.is_active = False
-        hotel.save()
+        hotel.soft_delete()
         return Response({"status": "Hotel deactivated"}, status=status.HTTP_200_OK)
