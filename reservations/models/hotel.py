@@ -13,3 +13,17 @@ class Hotel(UIDModel, TimestampedModel):
 
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def has_read_permission(request):
+        return request.user.is_authenticated
+
+    @staticmethod
+    def has_write_permission(request):
+        return request.user.is_authenticated and request.user.is_staff
+
+    def has_object_read_permission(self, request):
+        return request.user.is_authenticated
+
+    def has_object_write_permission(self, request):
+        return request.user.is_staff or self.admin == request.user

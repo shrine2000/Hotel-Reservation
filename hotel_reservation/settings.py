@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "reservations",
     "rest_framework",
     "rest_framework_simplejwt",
+    "dry_rest_permissions",
 ]
 
 MIDDLEWARE = [
