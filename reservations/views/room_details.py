@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from dry_rest_permissions.generics import DRYPermissions
 
 from reservations.models import Reservation
 from reservations.serializers import ReservationSerializer
@@ -10,7 +10,7 @@ from rest_framework import serializers
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (DRYPermissions,)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

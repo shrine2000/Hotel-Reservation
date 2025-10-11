@@ -22,3 +22,17 @@ class Reservation(UIDModel, TimestampedModel):
 
     def __str__(self):
         return f"Reservation {self.id} by {self.user.username}"
+
+    @staticmethod
+    def has_read_permission(request):
+        return request.user.is_authenticated
+
+    @staticmethod
+    def has_write_permission(request):
+        return request.user.is_authenticated
+
+    def has_object_read_permission(self, request):
+        return request.user.is_staff or self.user == request.user
+
+    def has_object_write_permission(self, request):
+        return request.user.is_staff or self.user == request.user
