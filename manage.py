@@ -14,6 +14,7 @@ def is_command_allowed(command):
         "shell",
         "sqlmigrate",
         "check",
+        "shell_plus",
     }
     if command in allowed_commands:
         return True
@@ -32,7 +33,7 @@ def main():
         command = sys.argv[1]
         if not is_command_allowed(command=command):
             print("Invalid Command")
-        sys.exit(1)
+            sys.exit(1)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
