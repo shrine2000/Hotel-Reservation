@@ -27,3 +27,10 @@ class Hotel(UIDModel, TimestampedModel):
 
     def has_object_write_permission(self, request):
         return request.user.is_staff or self.admin == request.user
+    def soft_delete(self):
+        self.is_active = False
+        self.save(update_fields=["is_active", "updated_at"])
+
+    def restore(self):
+        self.is_active = True
+        self.save(update_fields=["is_active", "updated_at"])
