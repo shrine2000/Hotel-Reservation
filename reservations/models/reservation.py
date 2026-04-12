@@ -17,11 +17,12 @@ class Reservation(UIDModel, TimestampedModel):
     is_active = models.BooleanField(default=True)
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        self.total_cost = self.room.base_cost * self.number_of_days
-        if self.room.available_rooms < 1:
-            raise NoRoomsAvailableError()
-        self.room.available_rooms -= 1
-        self.room.save()
+        if self.pk is None:
+            self.total_cost = self.room.base_cost * self.number_of_days
+            if self.room.available_rooms < 1:
+                raise NoRoomsAvailableError()
+            self.room.available_rooms -= 1
+            self.room.save()
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
