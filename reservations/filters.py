@@ -36,7 +36,7 @@ class RoomFilter(filters.FilterSet):
             "is_active",
         ]
 
-    def filter_available(self, queryset, name, value):
+    def filter_available(self, queryset, name: str, value: bool):
         if value:
             return queryset.filter(available_rooms__gt=0)
         return queryset

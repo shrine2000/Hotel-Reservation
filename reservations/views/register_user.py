@@ -11,6 +11,3 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
     throttle_classes = [UserRateThrottle]
-
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
