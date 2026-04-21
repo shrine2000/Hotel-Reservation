@@ -1,6 +1,6 @@
 from typing import Any
 
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from rest_framework.request import Request
 
@@ -18,12 +18,20 @@ class Reservation(UIDModel, TimestampedModel):
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         if self.pk is None:
-            self.total_cost = self.room.base_cost * self.number_of_days
-            if self.room.available_rooms < 1:
-                raise NoRoomsAvailableError()
-            self.room.available_rooms -= 1
-            self.room.save()
-        super().save(*args, **kwargs)
+            with transaction.atomic():
+                # Re-fetch with a row-level lock so concurrent bookings serialize here.
+                # select_for_update() is a no-op on SQLite; migrate to PostgreSQL for real protection.
+                from reservations.models.room import Room
+
+                room = Room.objects.select_for_update().get(pk=self.room_id)
+                if room.available_rooms < 1:
+                    raise NoRoomsAvailableError()
+                room.available_rooms -= 1
+                room.save(update_fields=["available_rooms"])
+                self.total_cost = room.base_cost * self.number_of_days
+                super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"Reservation {self.id} by {self.user.username}"

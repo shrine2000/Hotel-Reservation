@@ -18,7 +18,7 @@ def test_hotel_detail_view(api_client, regular_user, hotel, admin_user):
     regular_user = regular_user()
     hotel = hotel()
     api_client.force_authenticate(user=regular_user)
-    response = api_client.get(f"/api/hotels/{hotel.id}/")
+    response = api_client.get(f"/api/hotels/{hotel.uid}/")
     assert response.status_code == status.HTTP_200_OK
     assert response.data["name"] == hotel.name
 
@@ -29,7 +29,8 @@ def test_hotel_create_view_permission(api_client, regular_user):
     api_client.force_authenticate(user=regular_user)
     data = {"name": "New Hotel", "is_active": True}
     response = api_client.post("/api/hotels/", data, format="json")
-    assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+    # DRF checks permissions before method routing, so non-staff gets 403 not 405
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.django_db
@@ -38,8 +39,9 @@ def test_hotel_update_view_permission(api_client, regular_user, hotel):
     hotel = hotel()
     api_client.force_authenticate(user=regular_user)
     data = {"name": "Updated Hotel"}
-    response = api_client.put(f"/api/hotels/{hotel.id}/", data, format="json")
-    assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+    response = api_client.put(f"/api/hotels/{hotel.uid}/", data, format="json")
+    # DRF checks permissions before method routing, so non-staff gets 403 not 405
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.django_db
@@ -47,7 +49,7 @@ def test_hotel_deactivate_view_permission(api_client, regular_user, hotel):
     regular_user = regular_user()
     hotel = hotel()
     api_client.force_authenticate(user=regular_user)
-    response = api_client.patch(f"/api/hotels/{hotel.id}/deactivate/", format="json")
+    response = api_client.patch(f"/api/hotels/{hotel.uid}/deactivate/", format="json")
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 

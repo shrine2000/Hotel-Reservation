@@ -1,5 +1,7 @@
 import os
 
+os.environ.setdefault("PYTEST", "true")
+
 import pytest
 from rest_framework.test import APIClient
 from django.contrib.auth.models import User
@@ -12,6 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hotel_reservation.settings")
+
+
+@pytest.fixture(autouse=True)
+def use_locmem_cache(settings):
+    settings.CACHES = {
+        "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+    }
 
 
 @pytest.fixture(scope="session", autouse=True)

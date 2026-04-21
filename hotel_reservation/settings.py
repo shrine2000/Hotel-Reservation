@@ -162,7 +162,7 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 
-TESTING = "test" in sys.argv or os.environ.get("PYTEST")
+TESTING = "pytest" in sys.modules or bool(os.environ.get("PYTEST"))
 if TESTING:
     DEBUG = True
     REST_FRAMEWORK = {
