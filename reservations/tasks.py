@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 from celery import shared_task
 from django.db import transaction
-from django.db.models import F
+from django.db.models import DateField, DurationField, ExpressionWrapper, F
 
 from reservations.models import Reservation, Room
 
@@ -15,11 +15,22 @@ logger = logging.getLogger(__name__)
 def release_expired_reservations(self) -> None:
     today = date.today()
 
-    expired = [
-        r
-        for r in Reservation.objects.filter(is_active=True).select_related("room")
-        if r.check_in_date + timedelta(days=r.number_of_days) <= today
-    ]
+    # Step 1: turn the integer field into a duration  (e.g. 3  →  3 days)
+    stay_duration = ExpressionWrapper(
+        F("number_of_days") * timedelta(days=1),
+        output_field=DurationField(),
+    )
+    # Step 2: add that duration to check_in_date to get the checkout date
+    checkout_date = ExpressionWrapper(
+        F("check_in_date") + stay_duration,
+        output_field=DateField(),
+    )
+    expired = list(
+        Reservation.objects.filter(is_active=True)
+        .annotate(checkout_date=checkout_date)
+        .filter(checkout_date__lte=today)
+        .select_related("room")
+    )
 
     if not expired:
         logger.info("No expired reservations to release")

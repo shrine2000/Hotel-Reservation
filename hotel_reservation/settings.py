@@ -23,13 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-#jk6-jy=$w+ay9#r6lw9n32)am8v$mi58f*hwkmn!47-sk2w30"
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY", "django-insecure-#jk6-jy=$w+ay9#r6lw9n32)am8v$mi58f*hwkmn!47-sk2w30"
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = []
+_allowed = os.environ.get("ALLOWED_HOSTS", "")
+ALLOWED_HOSTS = [h for h in _allowed.split(",") if h]
 
 # Application definition
 
@@ -156,7 +157,7 @@ CACHES = {
 
 # Celery settings
 CELERY_BROKER_URL = REDIS_URL
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
