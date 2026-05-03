@@ -1,40 +1,43 @@
-from typing import Any
+from decimal import Decimal
 
-from django.db import models, transaction
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 from rest_framework.request import Request
 
-from reservations.models.base_models import UIDModel, TimestampedModel
-from reservations.exceptions import NoRoomsAvailableError
+from reservations.enums import ReservationStatus
+from reservations.models.base_models import TimestampedModel, UUIDModel
 
 
-class Reservation(UIDModel, TimestampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    room = models.ForeignKey("Room", on_delete=models.CASCADE)
-    check_in_date = models.DateField()
-    number_of_days = models.PositiveIntegerField()
-    total_cost = models.DecimalField(max_digits=8, decimal_places=2)
+class Reservation(UUIDModel, TimestampedModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reservations"
+    )
+    room = models.ForeignKey(
+        "Room", on_delete=models.CASCADE, related_name="reservations"
+    )
+    check_in_date = models.DateField(db_index=True)
+    number_of_days = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(365)]
+    )
+    total_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    )
+    status = models.CharField(
+        max_length=2,
+        choices=ReservationStatus.choices(),
+        default=ReservationStatus.PENDING.value,
+        db_index=True,
+    )
     is_active = models.BooleanField(default=True)
 
-    def save(self, *args: Any, **kwargs: Any) -> None:
-        if self.pk is None:
-            with transaction.atomic():
-                # Re-fetch with a row-level lock so concurrent bookings serialize here.
-                # select_for_update() is a no-op on SQLite; migrate to PostgreSQL for real protection.
-                from reservations.models.room import Room
-
-                room = Room.objects.select_for_update().get(pk=self.room_id)
-                if room.available_rooms < 1:
-                    raise NoRoomsAvailableError()
-                room.available_rooms -= 1
-                room.save(update_fields=["available_rooms"])
-                self.total_cost = room.base_cost * self.number_of_days
-                super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "status"]),
+        ]
 
     def __str__(self) -> str:
-        return f"Reservation {self.id} by {self.user.username}"
+        return f"Reservation {self.uid} by {self.user.username}"
 
     @staticmethod
     def has_read_permission(request: Request) -> bool:
@@ -45,11 +48,11 @@ class Reservation(UIDModel, TimestampedModel):
         return request.user.is_authenticated
 
     def has_object_read_permission(self, request: Request) -> bool:
-        return request.user.is_staff or self.user == request.user
+        return request.user.is_staff or self.user_id == request.user.pk
 
     def has_object_write_permission(self, request: Request) -> bool:
-        return request.user.is_staff or self.user == request.user
+        return request.user.is_staff or self.user_id == request.user.pk
 
     def soft_delete(self) -> None:
         self.is_active = False
-        self.save(update_fields=["is_active", "updated_at"])
+        self.save(update_fields=["is_active"])
