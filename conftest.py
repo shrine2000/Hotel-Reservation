@@ -3,17 +3,18 @@ import os
 os.environ.setdefault("PYTEST", "true")
 
 import pytest
-from rest_framework.test import APIClient
-from django.contrib.auth.models import User
-import logging
+from django.contrib.auth import get_user_model
 from model_bakery import baker
+from rest_framework.test import APIClient
+import logging
 
 from reservations.models import Hotel
 
 logger = logging.getLogger(__name__)
 
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hotel_reservation.settings")
+
+User = get_user_model()
 
 
 @pytest.fixture(autouse=True)
@@ -25,7 +26,6 @@ def use_locmem_cache(settings):
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_initial_test_data(django_db_setup, django_db_blocker):
-    # this could be useful in future when loading initial data, custom migrations, setting up test specific configs
     with django_db_blocker.unblock():
         logger.info("Setting up initial test data for the database")
 
@@ -48,7 +48,6 @@ def admin_user():
             is_superuser=True,
             is_staff=True,
             username="admin",
-            password="adminpassword",
             email="admin@example.com",
         )
 
@@ -63,7 +62,6 @@ def regular_user():
             is_superuser=False,
             is_staff=False,
             username="user",
-            password="userpassword",
             email="user@example.com",
         )
 
@@ -78,7 +76,7 @@ def hotel(admin_user):
             name="Hotel Sunshine",
             location="Sunnydale",
             description="A lovely hotel in Sunnydale.",
-            admin=admin_user,
+            admin=admin_user(),
             is_active=True,
         )
 

@@ -20,6 +20,10 @@ faker = "^28.0.0"
 dry-rest-permissions = "^0.1.10"
 django-extensions = "^4.1"
 django-filter = "^25.2"
+psycopg2-binary = "^2.9"
+gunicorn = "^22.0"
+django-phonenumber-field = {extras = ["phonenumbers"], version = "^8.4.0"}
+boto3 = "^1.43.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -30,8 +34,6 @@ pytest-django = "^4.8.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-
-# https://pytest-django.readthedocs.io/en/latest/
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "hotel_reservation.settings"
 python_files = ["test_*.py"]

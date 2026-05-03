@@ -1,17 +1,25 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator
 from django.db import models
 from rest_framework.request import Request
 
-from reservations.models import Hotel
-from reservations.models.base_models import UIDModel, TimestampedModel
+from reservations.models.base_models import TimestampedModel, UUIDModel
 from reservations.enums import RoomType, RoomLuxury
 
 
-class Room(UIDModel, TimestampedModel):
-    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
-    room_type = models.CharField(max_length=1, choices=RoomType.choices())
+class Room(UUIDModel, TimestampedModel):
+    hotel = models.ForeignKey("Hotel", on_delete=models.CASCADE, related_name="rooms")
+    room_type = models.CharField(max_length=2, choices=RoomType.choices())
     luxury = models.CharField(max_length=2, choices=RoomLuxury.choices())
-    base_cost = models.DecimalField(max_digits=8, decimal_places=2)
+    base_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    )
     available_rooms = models.PositiveIntegerField()
+    max_guests = models.PositiveSmallIntegerField(
+        default=2, validators=[MinValueValidator(1)]
+    )
+    amenities = models.JSONField(default=list, blank=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
@@ -29,12 +37,12 @@ class Room(UIDModel, TimestampedModel):
         return request.user.is_authenticated
 
     def has_object_write_permission(self, request: Request) -> bool:
-        return request.user.is_staff or self.hotel.admin == request.user
+        return request.user.is_staff or self.hotel.admin_id == request.user.pk
 
     def soft_delete(self) -> None:
         self.is_active = False
-        self.save(update_fields=["is_active", "updated_at"])
+        self.save(update_fields=["is_active"])
 
     def restore(self) -> None:
         self.is_active = True
-        self.save(update_fields=["is_active", "updated_at"])
+        self.save(update_fields=["is_active"])
