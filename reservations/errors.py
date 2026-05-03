@@ -37,6 +37,10 @@ class Errors:
     PAYMENT_ALREADY_COMPLETED = Error(
         "payment_already_completed", "This payment has already been completed."
     )
+    PAYMENT_NOT_REFUNDABLE = Error(
+        "payment_not_refundable",
+        "This payment cannot be refunded in its current status.",
+    )
     CHECK_IN_DATE_IN_PAST = Error(
         "check_in_date_in_past", "Check-in date cannot be in the past."
     )

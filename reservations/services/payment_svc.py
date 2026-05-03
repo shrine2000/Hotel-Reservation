@@ -1,7 +1,10 @@
 from decimal import Decimal
 
 from reservations.enums import PaymentStatus, ReservationStatus
-from reservations.exceptions import PaymentAlreadyCompletedError
+from reservations.exceptions import (
+    PaymentAlreadyCompletedError,
+    PaymentNotRefundableError,
+)
 from reservations.models.payment import Payment
 from reservations.models.reservation import Reservation
 
@@ -13,6 +16,11 @@ def create_payment(
     reference_id: str = "",
     notes: str = "",
 ) -> Payment:
+    if Payment.objects.filter(
+        reservation=reservation, status=PaymentStatus.COMPLETED.value
+    ).exists():
+        raise PaymentAlreadyCompletedError()
+
     payment = Payment.objects.create(
         reservation=reservation,
         amount=amount,
@@ -38,7 +46,7 @@ def complete_payment(payment: Payment) -> Payment:
 
 def refund_payment(payment: Payment) -> Payment:
     if payment.status != PaymentStatus.COMPLETED.value:
-        raise PaymentAlreadyCompletedError()
+        raise PaymentNotRefundableError()
     payment.status = PaymentStatus.REFUNDED.value
     payment.save(update_fields=["status"])
     return payment

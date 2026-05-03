@@ -82,5 +82,9 @@ class PaymentAlreadyCompletedError(HotelException):
     _default_error = Errors.PAYMENT_ALREADY_COMPLETED
 
 
+class PaymentNotRefundableError(HotelException):
+    _default_error = Errors.PAYMENT_NOT_REFUNDABLE
+
+
 class CheckInDateInPastError(HotelBusinessException):
     _default_error = Errors.CHECK_IN_DATE_IN_PAST
