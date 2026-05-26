@@ -6,12 +6,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from hotel_reservation.throttles import AuthUserThrottle, AuthAnonThrottle
 from reservations.serializers.auth_serializers import LoginSerializer
 
 
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [AuthUserThrottle, AuthAnonThrottle]
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)

@@ -223,5 +223,8 @@ else:
         "DEFAULT_THROTTLE_RATES": {
             "user": "100/minute",
             "anon": "20/minute",
+            "auth_user": "10/minute",
+            "auth_anon": "5/minute",
+            "payment": "5/minute",
         },
     }
