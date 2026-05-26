@@ -34,7 +34,8 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return (
-            Room.objects.select_related("hotel")
+            Room.objects.using("replica")
+            .select_related("hotel")
             .only(
                 "uid",
                 "room_type",

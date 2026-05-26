@@ -27,7 +27,8 @@ class GuestProfileViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = (
-            GuestProfile.objects.select_related("user")
+            GuestProfile.objects.using("replica")
+            .select_related("user")
             .only(
                 "uid",
                 "phone",
