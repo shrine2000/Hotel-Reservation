@@ -7,6 +7,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from hotel_reservation.throttles import PaymentThrottle
 from reservations.filters import PaymentFilter
 from reservations.models.payment import Payment
 from reservations.serializers.payment_serializers import (
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = (DRYPermissions,)
+    throttle_classes = [PaymentThrottle]
     lookup_field = "uid"
     http_method_names = ["get", "post", "head", "options"]
     filter_backends = (filters.OrderingFilter, DjangoFilterBackend)
