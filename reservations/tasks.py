@@ -33,7 +33,8 @@ def release_expired_reservations(self) -> None:
     ]
 
     expired = list(
-        Reservation.objects.filter(is_active=True, status__in=active_statuses)
+        Reservation.objects.using("replica")
+        .filter(is_active=True, status__in=active_statuses)
         .annotate(checkout_date=checkout_date)
         .filter(checkout_date__lte=today)
         .select_related("room")

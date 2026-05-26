@@ -30,7 +30,8 @@ class HotelReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return (
-            HotelReview.objects.select_related("user", "hotel")
+            HotelReview.objects.using("replica")
+            .select_related("user", "hotel")
             .only(
                 "uid",
                 "rating",

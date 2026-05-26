@@ -31,7 +31,8 @@ class ReservationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = (
-            Reservation.objects.select_related("room__hotel", "user")
+            Reservation.objects.using("replica")
+            .select_related("room__hotel", "user")
             .only(
                 "uid",
                 "check_in_date",

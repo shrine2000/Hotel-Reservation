@@ -36,7 +36,8 @@ class HotelViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return (
-            Hotel.objects.select_related("admin")
+            Hotel.objects.using("replica")
+            .select_related("admin")
             .prefetch_related("photos", "reviews")
             .annotate(avg_rating=Avg("reviews__rating"), review_count=Count("reviews"))
             .filter(is_active=True)
