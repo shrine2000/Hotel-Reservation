@@ -6,171 +6,78 @@ This document provides technical details for a hotel reservation system built wi
 
 The system is designed as a monolithic application with a clear separation of concerns, organized into the following core components:
 
+### Core Entities
 
-### Core Components
+*   **User**: The central identity entity, managing authentication and administrative privileges. Inherits from `UUIDModel` for a 10-digit numeric ID.
+*   **Hotel**: Managed by an Admin User, containing metadata such as location, description, and star ratings.
+*   **Room**: Associated with a Hotel, defining availability, luxury levels (Deluxe, Super Deluxe), and base costs.
+*   **Reservation**: Links a User to a specific Room for a defined duration, automatically calculating total costs and managing lifecycle states.
+*   **GuestProfile**: Extended metadata for Users (e.g., address, phone, ID verification), using the `GP-` prefix.
+*   **Payment**: Records financial transactions linked to Reservations, tracking status and payment methods with the `PAY-` prefix.
+*   **HotelReview**: User-submitted ratings and comments for Hotels, ensuring one review per user/hotel.
+*   **HotelPhoto**: Manages hotel imagery with support for primary photo selection and S3 URLs.
 
-- **Hotel Management**: Supports CRUD operations for hotels, restricted to admin users.
-- **Room Management**: Manages room inventory with real-time availability tracking.
-- **Reservation System**: Facilitates user bookings with automatic availability updates.
-- **Authentication & Authorization**: Implements JWT-based authentication with role-based permissions.
-- **Background Processing**: Utilizes Celery for asynchronous task execution.
-- **Caching**: Employs Redis to enhance performance through caching.
+### Data Integrity Patterns
 
-## Database Schema
+*   **Auditability**: All primary entities inherit from `TimestampedModel` for automated `created_at` and `last_updated_at` tracking.
+*   **Identity**: Entities utilize `UIDModel` for consistent, business-safe unique identifiers across the system.
+*   **Normalization**: Room types and luxury levels are managed via structured Enums to ensure data consistency.
 
-The system uses a relational database with the following entity relationships:
+## Detailed Architecture
 
-![Hotel Reservation System UML Diagram](docs/hotel_reservation_uml_v0.png)
+### 1. Identity & Domain Modeling
+The system utilizes a custom identity strategy to ensure global uniqueness and business-readable identifiers without leaking internal primary keys.
 
-### Entity Relationships
+*   **UUIDModel**: Generates 10-digit unique numeric identifiers using high-entropy entropy sources with a collision-retry mechanism.
+*   **CustomIDModel**: Supports domain-specific prefixed identifiers (e.g., GP- for Guest Profiles) to provide meaningful IDs for external interfaces.
+*   **Transactional ID Generation**: All unique identifiers are generated within a retry loop that handles database IntegrityError at the application layer, ensuring 100% uniqueness even under high concurrency.
 
-- **User** can manage multiple **Hotels** (as admin)
-- **Hotel** contains multiple **Rooms**
-- **User** can create multiple **Reservations**
-- **Room** can have multiple **Reservations**
-- **Reservation** automatically calculates total cost from room price and number of days
+### 2. Write Layer: Command Orchestration
+Business logic is strictly decoupled from the API layer and encapsulated within Service Modules.
 
-### Model Structure
+*   **Atomic Transactions**: Every state-changing operation (e.g., create_reservation, check_out) is wrapped in a database transaction to ensure atomicity.
+*   **Concurrency Control**: Critical resources (like room availability) are managed using row-level locking (select_for_update) to prevent overbooking in race conditions.
+*   **State Machine**: Reservation transitions (Pending -> Confirmed -> Checked In) are enforced through service-level logic, preventing invalid state transitions.
 
-- All models inherit from base classes providing UUID primary keys and timestamps
-- Soft delete functionality implemented via `is_active` flags
-- Comprehensive permission system with role-based access control
-- Automatic cost calculation in reservation model
+### 3. Read Layer: Performance Optimization
+Read operations are optimized for speed and reduced load on the primary writer node.
 
-## Technology Stack
+*   **Replica Routing**: Querysets are explicitly routed to read-only replicas using .using("replica").
+*   **Projections & Eager Loading**: To minimize memory overhead and "N+1" query issues, the system uses targeted projections (.only(), .values()) and optimized joins (.select_related(), .prefetch_related()).
+*   **View-Model Separation**: Read models are projected directly from the ORM into specific response schemas, ensuring that internal database structures are never directly exposed.
 
-### Backend Framework
-- Django 5.0.7: A high-level Python web framework.
-- Django REST Framework: A toolkit for building Web APIs.
-- Django Simple JWT: Provides JWT-based authentication.
-- Dry REST Permissions: Enhances API permission management.
+### 4. I/O Validation & Security
+The system implements a "Whitelist by Default" strategy for all incoming data.
 
-### Database & Caching
-- SQLite: Default database (planned migration to PostgreSQL).
-- Redis: Used for caching and as a Celery message broker.
-- Django Redis: Integrates Redis as a cache backend.
+*   **Character Whitelisting**: A custom CharacterPatternValidator enforces strict character sets (e.g., ALPHANUMERIC, SAFE_TEXT) to mitigate XSS and Injection vectors before data reaches the persistence layer.
+*   **Sanitization at the Edge**: Input strings are HTML-unescaped before validation to ensure that encoded malicious payloads are detected.
+*   **Strict Serializers**: Data transfer objects (DTOs) handle schema enforcement, type coercion, and business rule validation.
 
-### Background Processing
-- Celery: Distributed task queue for asynchronous operations.
-- Celery Beat: Scheduler for periodic tasks.
+### 5. Infrastructure & Scalability
+The platform is designed to be stateless and horizontally scalable.
 
-### Development Tools
-- Poetry: Manages dependencies and packaging.
-- pytest: Framework for writing and running tests.
-- pytest-django: Django-specific testing utilities.
-- model-bakery: Generates test data automatically.
-- pre-commit: Enforces code quality through Git hooks.
+*   **Persistence**: PostgreSQL with a primary-replica configuration.
+*   **Asynchronous Processing**: Celery handles background tasks such as expiring stale reservations and releasing locked inventory.
+*   **Distributed Caching**: Redis serves as both the message broker for Celery and the primary cache for high-frequency lookups.
+*   **Object Storage**: AWS S3 is used for durable, stateless storage of hotel media assets.
 
-## Authentication & Authorization
+### 6. Observability
+*   **Distributed Tracing**: Every request is assigned a unique RequestID via middleware, which is propagated through logs and headers.
+*   **Structured Logging**: Logs are formatted for ingestion by modern observability stacks (e.g., ELK, Grafana Loki), including request context and correlation IDs.
 
-### JWT Token Management
-- **Access Token**: Valid for 15 minutes for secure API access.
-- **Refresh Token**: Valid for 24 hours for token renewal.
-- **Token Blacklisting**: Automatically blacklists tokens after rotation.
+## Architecture Diagram
 
-### Permission System
-- **Public Access**: Unauthenticated users can register and log in.
-- **User Permissions**: Authenticated users can view hotels/rooms and create bookings.
-- **Admin Permissions**: Staff users can manage hotels and rooms.
-- **Rate Limiting**: Limits requests to 5 per minute for both authenticated and anonymous users.
-
-## Configuration
-
-### Environment Variables
-```bash
-REDIS_URL=redis://localhost:55000   
-SECRET_KEY=your-secret-key         
-DEBUG=True                          
-```
-
-### JWT Configuration
-```python
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-}
-```
-
-### Rate Limiting
-```python
-DEFAULT_THROTTLE_RATES = {
-    'user': '5/minute',
-    'anon': '5/minute',
-}
-```
-
-## Testing
-
-### Test Configuration
-```bash
-# Run all tests
-pytest
-
-# Run specific test file
-pytest reservations/tests/test_hotel.py
-```
-
-### Test Fixtures
-- `api_client`: Django REST Framework test client.
-- `admin_user`: Superuser account for testing.
-- `regular_user`: Standard user account for testing.
-- `hotel`: Hotel instance for testing.
-
-## Development
-
-### Development Setup
-```bash
-poetry install
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-python manage.py shell_plus
-```
-
-### Code Quality
-```bash
-pre-commit install
-
-pre-commit run --all-files
-```
-
- 
-## Setup Instructions
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/shrine2000/Hotel-Reservation
-   cd Hotel-Reservation
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   poetry install
-   ```
-
-3. **Apply migrations:**
-   ```bash
-   python3 manage.py migrate
-   ```
-
-4. **Run the server:**
-   ```bash
-   python3 manage.py runserver
-   ```
-
-## Pre-commit Hooks
-
-1. **Install pre-commit:**
-   ```bash
-   pip install pre-commit
-   ```
-
-2. **Set up hooks:**
-   ```bash
-   pre-commit install
-   ```
+![Hotel Reservation Class Diagram](docs/hotel_reservation_uml_v1.png)
 
 ---
 
+## Tech Stack (Technical Perspective)
+
+*   **Core Logic**: Python 3.10+
+*   **Application Framework**: Django (utilized primarily as an ORM and Routing engine)
+*   **API Layer**: Django Rest Framework (DRF)
+*   **Persistence**: PostgreSQL
+*   **Cache/Broker**: Redis
+*   **Task Queue**: Celery
+*   **Auth**: JWT (Stateless)
+*   **Infrastructure**: Docker, AWS S3
