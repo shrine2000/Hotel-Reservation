@@ -2,6 +2,10 @@
 
 This document provides technical details for a hotel reservation system built with Django 5.0.7 and Django REST Framework. The system offers a RESTful API for managing hotels, rooms, and reservations, incorporating JWT authentication, Redis caching, and Celery for background task processing.
 
+## Architecture Diagram
+
+![Hotel Reservation Class Diagram](docs/hotel_reservation_uml_v1.png)
+
 ## Architecture Overview
 
 The system is designed as a monolithic application with a clear separation of concerns, organized into the following core components:
@@ -64,10 +68,6 @@ The platform is designed to be stateless and horizontally scalable.
 ### 6. Observability
 *   **Distributed Tracing**: Every request is assigned a unique RequestID via middleware, which is propagated through logs and headers.
 *   **Structured Logging**: Logs are formatted for ingestion by modern observability stacks (e.g., ELK, Grafana Loki), including request context and correlation IDs.
-
-## Architecture Diagram
-
-![Hotel Reservation Class Diagram](docs/hotel_reservation_uml_v1.png)
 
 ---
 
