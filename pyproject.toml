@@ -24,6 +24,7 @@ psycopg2-binary = "^2.9"
 gunicorn = "^22.0"
 django-phonenumber-field = {extras = ["phonenumbers"], version = "^8.4.0"}
 boto3 = "^1.43.2"
+dotenv = "^0.9.9"
 
 
 [tool.poetry.group.dev.dependencies]

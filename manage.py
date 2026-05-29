@@ -15,6 +15,7 @@ def is_command_allowed(command):
         "sqlmigrate",
         "check",
         "shell_plus",
+        "createsuperuser",
     }
     if command in allowed_commands:
         return True
