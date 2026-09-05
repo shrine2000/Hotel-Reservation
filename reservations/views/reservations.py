@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class ReservationViewSet(viewsets.ModelViewSet):
     permission_classes = (DRYPermissions,)
     lookup_field = "uid"
-    http_method_names = ["get", "post", "head", "options"]
+    http_method_names = ["get", "post", "patch", "head", "options"]
     filter_backends = (filters.OrderingFilter, DjangoFilterBackend)
     filterset_class = ReservationFilter
     ordering_fields = ["check_in_date", "created_at", "total_cost"]
@@ -97,7 +97,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
         updated = reservation_svc.cancel_reservation(reservation)
         return Response(ReservationSerializer(updated).data)
 
-    @action(detail=True, methods=["patch"], url_path="modify")
+    @action(detail=True, methods=["PATCH"], url_path="modify")
     def modify(self, request: Request, uid: str | None = None) -> Response:
         reservation = self.get_object()
         serializer = ReservationModifySerializer(data=request.data)
