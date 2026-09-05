@@ -4,6 +4,7 @@ from typing import Any
 from django_filters.rest_framework import DjangoFilterBackend
 from dry_rest_permissions.generics import DRYPermissions
 from rest_framework import viewsets, status, filters
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -71,3 +72,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
             notes=serializer.validated_data.get("notes", ""),
         )
         return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["POST"], url_path="refund")
+    def refund(self, request: Request, uid: str | None = None) -> Response:
+        payment = self.get_object()
+        updated = payment_svc.refund_payment(payment)
+        return Response(PaymentSerializer(updated).data)

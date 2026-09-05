@@ -36,14 +36,6 @@ def create_payment(
     return payment
 
 
-def complete_payment(payment: Payment) -> Payment:
-    if payment.status == PaymentStatus.COMPLETED.value:
-        raise PaymentAlreadyCompletedError()
-    payment.status = PaymentStatus.COMPLETED.value
-    payment.save(update_fields=["status"])
-    return payment
-
-
 def refund_payment(payment: Payment) -> Payment:
     if payment.status != PaymentStatus.COMPLETED.value:
         raise PaymentNotRefundableError()
