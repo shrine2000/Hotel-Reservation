@@ -10,6 +10,7 @@ from model_bakery import baker
 from rest_framework.test import APIClient
 import logging
 
+from django.db.models import QuerySet
 from reservations.models import Hotel
 from reservations.models.room import Room
 from reservations.models.reservation import Reservation
@@ -191,3 +192,15 @@ def checkedin_reservation(guest, room_obj):
         status=ReservationStatus.CHECKED_IN.value,
         is_active=True,
     )
+
+
+original_using = QuerySet.using
+
+
+def mock_using(self, alias):
+    if alias == "replica":
+        return original_using(self, "default")
+    return original_using(self, alias)
+
+
+QuerySet.using = mock_using
