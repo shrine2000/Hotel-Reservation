@@ -18,6 +18,7 @@ from pathlib import Path
 from django.conf import settings
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -105,6 +106,7 @@ DATABASES = {
             "POSTGRES_REPLICA_HOST", os.environ.get("POSTGRES_HOST", "localhost")
         ),
         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+        "TEST": {"MIRROR": "default"},
     },
 }
 
@@ -215,6 +217,13 @@ if TESTING:
     REST_FRAMEWORK = {
         **_DRF_BASE,
         "DEFAULT_THROTTLE_CLASSES": [],
+        "DEFAULT_THROTTLE_RATES": {
+            "user": "100/minute",
+            "anon": "20/minute",
+            "auth_user": "10/minute",
+            "auth_anon": "5/minute",
+            "payment": "5/minute",
+        },
     }
 else:
     REST_FRAMEWORK = {

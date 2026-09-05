@@ -12,13 +12,16 @@ x-app-env: &app-env
 
 services:
   db:
-    image: postgres:16
+    image: bitnami/postgresql:latest
     environment:
-      POSTGRES_DB: hotel_reservation
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: postgres
+      POSTGRESQL_DATABASE: hotel_reservation
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/bitnami/postgresql
     ports:
       - "5434:5432"
     healthcheck:
@@ -28,13 +31,21 @@ services:
       retries: 5
 
   db_replica:
-    image: postgres:16
+    image: bitnami/postgresql:latest
     environment:
-      POSTGRES_DB: hotel_reservation
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_MASTER_HOST: db
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: postgres
+      POSTGRESQL_DATABASE: hotel_reservation
     ports:
       - "5433:5432"
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
