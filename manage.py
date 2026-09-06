@@ -10,6 +10,7 @@ def is_command_allowed(command):
         "runserver",
         "migrate",
         "makemigrations",
+        "showmigrations",
         "collectstatic",
         "shell",
         "sqlmigrate",
